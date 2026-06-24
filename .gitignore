@@ -17,3 +17,7 @@ __pycache__/
 
 # Lambda build artifacts
 *.zip
+
+# Personal notes
+AWS*.md
+document-invoice-platform.md
