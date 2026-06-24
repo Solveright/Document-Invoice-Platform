@@ -1,8 +1,11 @@
+# AWS credentials
+*.csv
+*_accessKeys.csv
+
 # Terraform
 **/.terraform/*
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 
 # Python
 __pycache__/
@@ -11,3 +14,6 @@ __pycache__/
 
 # VS Code
 .vscode/
+
+# Lambda build artifacts
+*.zip
