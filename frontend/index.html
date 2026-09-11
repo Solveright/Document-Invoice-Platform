@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Document &amp; Invoice Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <span>Document &amp; Invoice Platform</span>
+    </div>
+    <div class="topbar-right">
+      <span id="user-label" class="user-label" hidden></span>
+      <button id="signout-btn" class="btn btn-ghost" hidden>Sign out</button>
+    </div>
+  </header>
+
+  <main class="shell">
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Sign in                                                             -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="auth-view" class="card" hidden>
+      <h1>Sign in</h1>
+      <p class="muted">Authenticate against the Cognito user pool to get a JWT.</p>
+
+      <form id="login-form" class="stack" autocomplete="on">
+        <label>
+          <span>Username or email</span>
+          <input id="username" name="username" type="text" required autocomplete="username" />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="password" name="password" type="password" required autocomplete="current-password" />
+        </label>
+        <button id="login-btn" class="btn btn-primary" type="submit">Sign in</button>
+      </form>
+
+      <!-- Shown when Cognito returns NEW_PASSWORD_REQUIRED (admin-created user) -->
+      <form id="new-password-form" class="stack" hidden>
+        <p class="notice">This account needs a permanent password before first use.</p>
+        <label>
+          <span>New password</span>
+          <input id="new-password" type="password" required autocomplete="new-password" />
+        </label>
+        <button class="btn btn-primary" type="submit">Set password &amp; continue</button>
+      </form>
+
+      <p id="auth-error" class="error" hidden></p>
+    </section>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Upload + list                                                       -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="app-view" hidden>
+
+      <div class="card">
+        <h1>Upload a document</h1>
+        <p class="muted">
+          PDF only, up to <span id="max-size-label">20 MB</span>. The file goes
+          straight from your browser to S3 using a presigned URL &mdash; it never
+          passes through API Gateway or Lambda.
+        </p>
+
+        <div id="dropzone" class="dropzone" tabindex="0" role="button"
+             aria-label="Choose a PDF to upload">
+          <input id="file-input" type="file" accept="application/pdf,.pdf" hidden />
+          <div class="dropzone-inner">
+            <strong>Drop a PDF here</strong>
+            <span class="muted">or click to browse</span>
+          </div>
+        </div>
+
+        <div id="file-summary" class="file-summary" hidden>
+          <div>
+            <div id="file-name" class="file-name"></div>
+            <div id="file-meta" class="muted small"></div>
+          </div>
+          <button id="clear-file" class="btn btn-ghost" type="button">Remove</button>
+        </div>
+
+        <div class="actions">
+          <button id="upload-btn" class="btn btn-primary" type="button" disabled>Upload</button>
+          <button id="refresh-btn" class="btn btn-ghost" type="button">Refresh list</button>
+        </div>
+
+        <div id="progress-wrap" class="progress-wrap" hidden>
+          <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+          <span id="progress-label" class="muted small">0%</span>
+        </div>
+
+        <p id="upload-status" class="status" hidden></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Your documents</h2>
+          <span id="doc-count" class="pill">0</span>
+        </div>
+        <div id="doc-list" class="doc-list">
+          <p class="muted">Nothing uploaded yet.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Config not filled in                                                -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="config-view" class="card" hidden>
+      <h1>Configuration required</h1>
+      <p>Fill in <code>frontend/config.js</code> with your stack's values, then reload.</p>
+      <pre id="config-hint"></pre>
+      <p class="muted small">
+        Run <code>terraform output -raw frontend_config</code> in
+        <code>infra/terraform</code> to generate this file.
+      </p>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

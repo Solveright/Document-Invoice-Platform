@@ -1,0 +1,381 @@
+:root {
+  --bg: #0f1218;
+  --surface: #171b24;
+  --surface-2: #1e232e;
+  --border: #2a303c;
+  --text: #e6e9ef;
+  --muted: #8b93a3;
+  --accent: #4f8cff;
+  --accent-hover: #3d7bf0;
+  --ok: #35c07f;
+  --err: #ff6b6b;
+  --warn: #f0b429;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+/* The UA stylesheet applies [hidden] { display: none } at the lowest
+   specificity, so any class rule with an explicit `display` silently defeats
+   it. Several elements toggled from JS are display: flex, which made
+   el.hidden = true a no-op. This has to win over everything. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------------------------------------------------------------- topbar */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.brand-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--accent), #8f6bff);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ----------------------------------------------------------------- shell */
+
+.shell {
+  max-width: 760px;
+  margin: 32px auto 64px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1 { font-size: 20px; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 16px; margin: 0; letter-spacing: -0.01em; }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+}
+
+pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* ----------------------------------------------------------------- forms */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.stack label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input[type="text"],
+input[type="password"] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+input:focus-visible,
+.dropzone:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* --------------------------------------------------------------- buttons */
+
+.btn {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 9px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+}
+.btn-ghost:hover:not(:disabled) { color: var(--text); border-color: #3a4150; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* -------------------------------------------------------------- dropzone */
+
+.dropzone {
+  margin-top: 18px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+  border-color: var(--accent);
+  background: rgba(79, 140, 255, 0.06);
+}
+
+.dropzone-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.file-summary {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.file-name {
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* -------------------------------------------------------------- progress */
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.progress {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.15s ease;
+}
+
+/* -------------------------------------------------------- status / lists */
+
+.status, .error, .notice {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.status.ok    { color: var(--ok);   border-color: rgba(53, 192, 127, 0.35); }
+.status.err,
+.error        { color: var(--err);  border-color: rgba(255, 107, 107, 0.35); }
+.notice       { color: var(--warn); border-color: rgba(240, 180, 41, 0.35); }
+
+.doc-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+}
+
+/* Phase 10: a document is now a card, because it carries extracted fields
+   underneath the header row rather than being a single line. */
+
+.doc-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.doc-row-flush {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.doc-reason {
+  margin: 0 14px 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--err);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.extracted {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 16px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field-value {
+  font-size: 13.5px;
+  word-break: break-word;
+}
+
+/* Textract confidence below 80% — visible without being alarming. */
+.field-low {
+  color: var(--warn);
+  border-bottom: 1px dotted var(--warn);
+  cursor: help;
+}
+
+.doc-main { min-width: 0; }
+
+.doc-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-sub { color: var(--muted); font-size: 12.5px; }
+
+.pill {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge-pending  { background: rgba(240, 180, 41, 0.14);  color: var(--warn); }
+.badge-uploaded { background: rgba(79, 140, 255, 0.14);  color: var(--accent); }
+.badge-done     { background: rgba(53, 192, 127, 0.14);  color: var(--ok); }
+.badge-failed   { background: rgba(255, 107, 107, 0.14); color: var(--err); }
+
+@media (max-width: 560px) {
+  .shell { margin-top: 20px; }
+  .card { padding: 18px; }
+  .actions { flex-direction: column; }
+  .actions .btn { width: 100%; }
+}
