@@ -92,9 +92,11 @@ resource "aws_acm_certificate" "frontend" {
   validation_method         = "DNS"
 
   # The distribution references this cert, so it can never be destroyed before
-  # its replacement exists.
+  # its replacement exists. prevent_destroy guards the live cert against a bare
+  # `apply` (no var-file) flipping count to 0; remove it deliberately to rotate.
   lifecycle {
     create_before_destroy = true
+    prevent_destroy       = true
   }
 
   tags = {
