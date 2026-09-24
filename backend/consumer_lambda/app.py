@@ -277,6 +277,29 @@ def process_object(bucket, key, size, context):
     line_items = _line_items(response)
     pages = response.get("DocumentMetadata", {}).get("Pages")
 
+    if not extracted and not line_items:
+        # Textract returns 200 with no SummaryFields/LineItemGroups for a
+        # readable PDF that simply is not an invoice — it does not raise
+        # UnsupportedDocumentException. Left alone this would silently store
+        # PROCESSED with an empty extracted map, indistinguishable from a
+        # genuine success. Give it its own terminal status instead.
+        _mark(
+            user_id, document_id, "NO_DATA",
+            pageCount=Decimal(str(pages)) if pages is not None else None,
+            textractRegion=TEXTRACT_REGION,
+            statusDetail="Textract found no invoice fields or line items in this document.",
+            failureReason=None,
+            **base
+        )
+        logger.warning(json.dumps({
+            "event": "document_no_data",
+            "request_id": context.aws_request_id,
+            "user_id": user_id,
+            "document_id": document_id,
+            "pages": pages,
+        }))
+        return
+
     _mark(
         user_id, document_id, "PROCESSED",
         extracted=extracted,
@@ -284,6 +307,7 @@ def process_object(bucket, key, size, context):
         pageCount=Decimal(str(pages)) if pages is not None else None,
         textractRegion=TEXTRACT_REGION,
         failureReason=None,
+        statusDetail=None,
         **base
     )
 

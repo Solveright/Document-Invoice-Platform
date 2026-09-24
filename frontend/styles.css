@@ -372,6 +372,7 @@ input:focus-visible,
 .badge-uploaded { background: rgba(79, 140, 255, 0.14);  color: var(--accent); }
 .badge-done     { background: rgba(53, 192, 127, 0.14);  color: var(--ok); }
 .badge-failed   { background: rgba(255, 107, 107, 0.14); color: var(--err); }
+.badge-nodata   { background: rgba(139, 147, 163, 0.14); color: var(--muted); }
 
 @media (max-width: 560px) {
   .shell { margin-top: 20px; }

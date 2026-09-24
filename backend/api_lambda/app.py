@@ -241,6 +241,7 @@ def list_documents(event, context, user_id):
             "uploadedAt": item.get("uploadedAt"),
             "processedAt": item.get("processedAt"),
             "failureReason": item.get("failureReason"),
+            "statusDetail": item.get("statusDetail"),
             "pageCount": int(item["pageCount"]) if item.get("pageCount") is not None else None,
             "extracted": extracted,
             "lineItemCount": len(item.get("lineItems") or []),

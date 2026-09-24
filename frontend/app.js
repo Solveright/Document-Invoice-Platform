@@ -458,6 +458,7 @@
     UPLOADED: ["badge-uploaded", "Uploaded"],
     PROCESSING: ["badge-uploaded", "Extracting…"],
     PROCESSED: ["badge-done", "Processed"],
+    NO_DATA: ["badge-nodata", "No data found"],
     FAILED: ["badge-failed", "Failed"]
   };
 
@@ -571,10 +572,13 @@
       row.appendChild(badge);
       card.appendChild(row);
 
-      if (doc.status === "FAILED" && doc.failureReason) {
+      var reasonText = doc.status === "FAILED" ? doc.failureReason
+        : doc.status === "NO_DATA" ? doc.statusDetail
+        : null;
+      if (reasonText) {
         var reason = document.createElement("div");
         reason.className = "doc-reason";
-        reason.textContent = doc.failureReason;
+        reason.textContent = reasonText;
         card.appendChild(reason);
       }
 
