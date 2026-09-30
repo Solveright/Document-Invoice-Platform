@@ -46,6 +46,14 @@ resource "aws_apigatewayv2_stage" "dev" {
 
   name        = "$default"
   auto_deploy = true
+
+  # Stage-wide token bucket (shared by all callers, not per-user). Requests
+  # over the limit get a 429 before reaching api_lambda. Low-traffic project:
+  # one upload is a POST plus a few polling GETs.
+  default_route_settings {
+    throttling_burst_limit = 20
+    throttling_rate_limit  = 10
+  }
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {

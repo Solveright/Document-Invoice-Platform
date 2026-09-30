@@ -133,4 +133,13 @@ resource "aws_lambda_event_source_mapping" "sqs_to_consumer" {
   event_source_arn = aws_sqs_queue.document_processing_queue.arn
   function_name    = aws_lambda_function.consumer_lambda.arn
   batch_size       = 1
+
+  # Caps parallel Textract calls (the spend bound). Set on the poller rather
+  # than via reserved_concurrent_executions: reserved concurrency makes the
+  # poller over-receive and throttle, and each throttled receive counts toward
+  # maxReceiveCount, pushing legitimate uploads to the DLQ. This just leaves
+  # the extra messages queued. (2 is the minimum AWS allows.)
+  scaling_config {
+    maximum_concurrency = 2
+  }
 }
