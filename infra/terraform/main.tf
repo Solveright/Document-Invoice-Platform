@@ -1,4 +1,4 @@
-# IMPORTANT: always run `terraform apply -var-file=test.tfvars` in this
+# IMPORTANT: always run `terraform apply -var-file "test.tfvars"` in this
 # directory. A bare `apply` (no var-file) drifts against the live
 # test.solveright.com.tw ACM cert / Route 53 config and will DESTROY that
 # cert. See test.tfvars for the values that must be supplied.

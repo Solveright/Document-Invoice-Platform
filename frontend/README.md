@@ -79,7 +79,7 @@ Sign in with the temporary password; the UI handles the
 - **No custom domain.** The site lives at `https://dxxxx.cloudfront.net` on
   CloudFront's default certificate. Phase 9 adds Route 53 and an ACM cert —
   which must be issued in `us-east-1` regardless of where the bucket lives.
-  **Always run `terraform apply -var-file=test.tfvars` (see `infra/terraform/`)
+  **Always run `terraform apply -var-file "test.tfvars"` (see `infra/terraform/`)
   — a bare `apply` without it drifts against the live `test.solveright.com.tw`
   ACM cert and will destroy it.**
 - **Status is `PENDING_UPLOAD`, not `PROCESSED`.** The API enqueues the SQS
