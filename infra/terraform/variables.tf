@@ -108,3 +108,16 @@ variable "enable_csp" {
   type        = bool
   default     = false
 }
+
+# -------------------------------------------------------------- Phase 11
+
+variable "monthly_budget_usd" {
+  description = "Monthly whole-account cost budget in USD. Alerts at 80% actual and 100% forecasted spend."
+  type        = string
+  default     = "10"
+}
+
+variable "budget_alert_email" {
+  description = "Email address for budget alerts. No default so it is never committed — set it in budget.auto.tfvars (gitignored)."
+  type        = string
+}
