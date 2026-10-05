@@ -27,3 +27,5 @@ frontend/config.js
 # Personal notes
 AWS*.md
 document-invoice-platform.md
+/\#*.md
+/Claude outputs/
