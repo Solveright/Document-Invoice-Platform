@@ -1,7 +1,19 @@
-resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-${var.environment}-lambda-role"
+# Phase 11 — one execution role per function, each holding only what that
+# function's code calls. Function names are locals so the IAM policies can
+# reference them without depending on the functions themselves (which depend
+# on the policies — see depends_on below).
+locals {
+  api_function_name      = "${var.project_name}-${var.environment}-api"
+  consumer_function_name = "${var.project_name}-${var.environment}-consumer"
 
-  assume_role_policy = jsonencode({
+  # Built by hand rather than from aws_cloudwatch_log_group.*.arn: those log
+  # groups reference the functions, so using them here would be a cycle.
+  # Must stay in step with the names in cloudwatch.tf.
+  log_group_arn_prefix   = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda"
+  api_log_group_arn      = "${local.log_group_arn_prefix}/${local.api_function_name}"
+  consumer_log_group_arn = "${local.log_group_arn_prefix}/${local.consumer_function_name}"
+
+  lambda_assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
@@ -13,36 +25,44 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# ---------------------------------------------------------------------------
+# API Lambda role: presign uploads, register and list documents
+# ---------------------------------------------------------------------------
+
+resource "aws_iam_role" "api_lambda_role" {
+  name               = "${var.project_name}-${var.environment}-api-lambda-role"
+  assume_role_policy = local.lambda_assume_role_policy
 }
 
-resource "aws_iam_role_policy" "lambda_app_policy" {
-  name = "${var.project_name}-${var.environment}-lambda-policy"
-  role = aws_iam_role.lambda_role.id
+resource "aws_iam_role_policy" "api_lambda_policy" {
+  name = "${var.project_name}-${var.environment}-api-lambda-policy"
+  role = aws_iam_role.api_lambda_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        # Replaces AWSLambdaBasicExecutionRole, which grants these on every
+        # log group in the account. The group is Terraform-managed, so
+        # CreateLogGroup only matters if someone deletes it out-of-band.
+        Sid    = "WriteOwnLogs"
         Effect = "Allow"
         Action = [
-          "sqs:SendMessage",
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ]
         Resource = [
-          aws_sqs_queue.document_processing_queue.arn
+          local.api_log_group_arn,
+          "${local.api_log_group_arn}:*"
         ]
       },
       {
+        # put_item registers the AWAITING_UPLOAD row; query lists documents.
+        Sid    = "RegisterAndListDocuments"
         Effect = "Allow"
         Action = [
           "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
           "dynamodb:Query"
         ]
         Resource = aws_dynamodb_table.documents.arn
@@ -58,6 +78,62 @@ resource "aws_iam_role_policy" "lambda_app_policy" {
           "s3:PutObject"
         ]
         Resource = "${aws_s3_bucket.raw_documents.arn}/uploads/*"
+      }
+    ]
+  })
+}
+
+# ---------------------------------------------------------------------------
+# Consumer Lambda role: drain the queue, read the PDF, Textract, upsert status
+# ---------------------------------------------------------------------------
+
+resource "aws_iam_role" "consumer_lambda_role" {
+  name               = "${var.project_name}-${var.environment}-consumer-lambda-role"
+  assume_role_policy = local.lambda_assume_role_policy
+}
+
+resource "aws_iam_role_policy" "consumer_lambda_policy" {
+  name = "${var.project_name}-${var.environment}-consumer-lambda-policy"
+  role = aws_iam_role.consumer_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # See WriteOwnLogs on the API role.
+        Sid    = "WriteOwnLogs"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          local.consumer_log_group_arn,
+          "${local.consumer_log_group_arn}:*"
+        ]
+      },
+      {
+        # Used by the SQS event source mapping's poller, which runs as the
+        # function's execution role — not by the function code itself.
+        Sid    = "PollProcessingQueue"
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = aws_sqs_queue.document_processing_queue.arn
+      },
+      {
+        # update_item only (_mark upserts); never put_item, so the API's
+        # presign-time fields are not clobbered.
+        Sid    = "UpdateDocumentStatus"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:UpdateItem"
+        ]
+        Resource = aws_dynamodb_table.documents.arn
       },
       {
         Sid    = "ReadRawDocuments"
@@ -83,8 +159,8 @@ resource "aws_iam_role_policy" "lambda_app_policy" {
 }
 
 resource "aws_lambda_function" "api_lambda" {
-  function_name = "${var.project_name}-${var.environment}-api"
-  role          = aws_iam_role.lambda_role.arn
+  function_name = local.api_function_name
+  role          = aws_iam_role.api_lambda_role.arn
   handler       = "app.lambda_handler"
   runtime       = "python3.12"
 
@@ -103,11 +179,15 @@ resource "aws_lambda_function" "api_lambda" {
       UPLOAD_URL_TTL_SECONDS = tostring(var.upload_url_ttl_seconds)
     }
   }
+
+  # Attach permissions before switching the function onto the new role, so
+  # there is no window where it runs with an empty role.
+  depends_on = [aws_iam_role_policy.api_lambda_policy]
 }
 
 resource "aws_lambda_function" "consumer_lambda" {
-  function_name = "${var.project_name}-${var.environment}-consumer"
-  role          = aws_iam_role.lambda_role.arn
+  function_name = local.consumer_function_name
+  role          = aws_iam_role.consumer_lambda_role.arn
   handler       = "app.lambda_handler"
   runtime       = "python3.12"
 
@@ -127,6 +207,10 @@ resource "aws_lambda_function" "consumer_lambda" {
       MAX_TEXTRACT_BYTES = tostring(var.max_upload_bytes)
     }
   }
+
+  # As above. Matters more here: the SQS poller also runs as this role, and
+  # an AccessDeniedException from Textract is treated as permanent (FAILED).
+  depends_on = [aws_iam_role_policy.consumer_lambda_policy]
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_to_consumer" {
