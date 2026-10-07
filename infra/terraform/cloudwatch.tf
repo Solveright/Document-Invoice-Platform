@@ -18,6 +18,7 @@ resource "aws_cloudwatch_metric_alarm" "api_lambda_errors" {
   statistic           = "Sum"
   threshold           = 0
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.api_lambda.function_name
@@ -34,6 +35,7 @@ resource "aws_cloudwatch_metric_alarm" "consumer_lambda_errors" {
   statistic           = "Sum"
   threshold           = 0
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.consumer_lambda.function_name
@@ -50,6 +52,7 @@ resource "aws_cloudwatch_metric_alarm" "api_lambda_throttles" {
   statistic           = "Sum"
   threshold           = 0
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.api_lambda.function_name
@@ -66,6 +69,7 @@ resource "aws_cloudwatch_metric_alarm" "consumer_lambda_throttles" {
   statistic           = "Sum"
   threshold           = 0
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.consumer_lambda.function_name
@@ -82,6 +86,7 @@ resource "aws_cloudwatch_metric_alarm" "sqs_oldest_message" {
   statistic           = "Maximum"
   threshold           = 300
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     QueueName = aws_sqs_queue.document_processing_queue.name
@@ -98,6 +103,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
   statistic           = "Maximum"
   threshold           = 0
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     QueueName = aws_sqs_queue.document_processing_dlq.name
