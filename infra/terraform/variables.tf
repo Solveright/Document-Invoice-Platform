@@ -45,9 +45,9 @@ variable "max_upload_bytes" {
 }
 
 variable "upload_url_ttl_seconds" {
-  description = "Lifetime of a presigned upload URL. Keep short; it is a bearer credential."
+  description = "Lifetime of a presigned upload URL. Keep short; it is a bearer credential that can be replayed until it expires, and each PUT re-triggers Textract. The browser PUTs immediately after presigning."
   type        = number
-  default     = 900
+  default     = 120
 }
 
 # --------------------------------------------------------------- Phase 8

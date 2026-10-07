@@ -40,7 +40,7 @@ output "frontend_bucket" {
 
 output "website_url" {
   description = "The site. Custom domain once var.domain_name is set, otherwise the default CloudFront hostname."
-  value = local.use_custom_domain ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.frontend.domain_name}"
+  value       = local.use_custom_domain ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
 
 # --------------------------------------------------------------- Phase 9

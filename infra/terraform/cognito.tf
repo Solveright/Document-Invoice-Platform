@@ -29,7 +29,7 @@ resource "aws_cognito_user_pool_client" "app_client" {
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 
-  generate_secret = false  # keep false for SPA/CLI testing — simpler token flow
+  generate_secret = false # keep false for SPA/CLI testing — simpler token flow
 }
 
 resource "aws_apigatewayv2_authorizer" "cognito" {
