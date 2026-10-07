@@ -103,3 +103,33 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
     QueueName = aws_sqs_queue.document_processing_dlq.name
   }
 }
+
+resource "aws_sns_topic" "alerts" {
+  name = "${var.project_name}-${var.environment}-alerts"
+}
+
+resource "aws_sns_topic_subscription" "alerts_email" {
+  topic_arn = aws_sns_topic.alerts.arn
+  protocol  = "email"
+  endpoint  = var.budget_alert_email
+}
+
+# Replayed presigned PUTs re-trigger S3 -> SQS -> consumer -> Textract without
+# passing API Gateway's throttle. maximum_concurrency = 2 keeps the queue
+# drained, so this watches invocations rather than queue depth.
+resource "aws_cloudwatch_metric_alarm" "consumer_lambda_runaway_invocations" {
+  alarm_name          = "consumer-lambda-runaway-invocations"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Invocations"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 20
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    FunctionName = aws_lambda_function.consumer_lambda.function_name
+  }
+}

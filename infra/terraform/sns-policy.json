@@ -1,0 +1,32 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ManageAlertsTopic",
+      "Effect": "Allow",
+      "Action": [
+        "sns:CreateTopic",
+        "sns:DeleteTopic",
+        "sns:GetTopicAttributes",
+        "sns:SetTopicAttributes",
+        "sns:ListTagsForResource",
+        "sns:TagResource",
+        "sns:UntagResource",
+        "sns:Subscribe",
+        "sns:ListSubscriptionsByTopic",
+        "sns:GetSubscriptionAttributes",
+        "sns:SetSubscriptionAttributes",
+        "sns:Unsubscribe"
+      ],
+      "Resource": "arn:aws:sns:ap-northeast-1:366258938367:document-invoice-platform-dev-alerts"
+    },
+    {
+      "Sid": "TestRunawayAlarm",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:SetAlarmState"
+      ],
+      "Resource": "arn:aws:cloudwatch:ap-northeast-1:366258938367:alarm:consumer-lambda-runaway-invocations"
+    }
+  ]
+}
