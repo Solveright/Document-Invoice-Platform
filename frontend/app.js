@@ -632,6 +632,21 @@
 
   $("refresh-btn").addEventListener("click", loadDocuments);
 
+  // Header brand: back to the main view. There is no router — render() is
+  // how this app switches views — so a plain click (mouse or Enter) re-renders
+  // in place: no reload, and the sessionStorage session is untouched. Signed in,
+  // that is the upload + documents view (and the list refreshes); signed out,
+  // it is the sign-in form. Modified clicks (new tab/window) fall through to
+  // the href; note a new tab has its own sessionStorage, so it starts signed out.
+  $("brand-link").addEventListener("click", function (e) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+    e.preventDefault();
+    render();
+    window.scrollTo(0, 0);
+  });
+
   /* -------------------------------------------------------------- bootstrap */
 
   session = loadSession();
